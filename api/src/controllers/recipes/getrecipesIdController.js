@@ -12,21 +12,25 @@ const getRecipeId = async (req, res) => {
     try {
         const { id } = req.params;
         //recipeDb busca en la base de datos local utilizando sequalize (Reccipe.findByPk)
-        const recipeDb = await Recipe.findByPk(id);
         //devuelve la receta encontrada en la BD
+        const recipeDb = await Recipe.findByPk(id);
         if (recipeDb) {
             return res.status(200).json(recipeDb)
         }
-        const response = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY}&number=100&addRecipeInformation=true`);
+        const response = await axios.get(`https://api.spoonacular.com/recipes/${id}/information?apiKey=${API_KEY}`);
+        //https://api.spoonacular.com/recipes/{id}/information;
+        //https://api.spoonacular.com/recipes/complexSearch;
         const data = response.data
+        const stepsArray = data.analyzedInstructions[0] ? data.analyzedInstructions[0].steps.map((step) => step.step) : [];
+        const stepsText = stepsArray.join('\n');
         const recipe = {
-            id: id,
+            id: data.id,
             name: data.title,
             image: data.image,
             summary: data.summary,
             healthScore: data.healthScore,
-            //   steps: data.analyzedInstructions[0] ? data.analyzedInstructions[0].steps.map((step) => step.step) : [],
-            //   diets: data.diets,
+            steps: stepsText,
+            diets: data.diets,
         };
         const newRecipe = await Recipe.create(recipe);
         res.status(200).json(newRecipe);
