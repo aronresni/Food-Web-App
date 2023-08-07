@@ -5,7 +5,7 @@ module.exports = (sequelize) => {
   // defino el modelo
   sequelize.define('recipe', {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
       allowNull: false
@@ -28,7 +28,7 @@ module.exports = (sequelize) => {
     },
     steps: {
       type: DataTypes.TEXT,
-      allowNull: false,
+      allowNull: true,
     }
 
   });

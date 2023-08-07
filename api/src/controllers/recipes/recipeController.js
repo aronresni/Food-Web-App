@@ -24,7 +24,7 @@ const getRecipeApi = async () => {
                 });
 
                 // Buscar y asociar dietas
-                const dietas = await Diet.findAll({
+                const dietas = await Diets.findAll({
                     where: { name: recetaAPI.diets },
                 });
                 nuevaReceta.addDiet(dietas);

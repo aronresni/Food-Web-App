@@ -1,16 +1,32 @@
-const { Diet } = require("../../db")
-const axios = require("axios")
-const { API_KEY, API_BASE } = process.env;
+const axios = require('axios');
+const { Diets } = require('../../db');
+const { API_KEY } = process.env;
 
-const getDietController = async () => {
-    const response = await axios.get(`${API_BASE}/complexSearch?apiKey=${API_KEY}`);
-    if (response.status === 200) {
-        const dietsFromApi = response.data;
-        await Diet.bulkCreate(dietsFromApi);
+const getDiets = async () => {
+    try {
+        const dietsFromDb = await Diets.findAll();
+        
+        if (dietsFromDb.length === 0) {
+            const dietApi = await axios.get(
+                `https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY}&number=5&addRecipeInformation=true`
+            );
+            const dietNames = dietApi.data.results.map((el) => el.diets).flat();
+            const uniqueDietNames = [...new Set(dietNames)];
 
-    } else { console.log(error); }
-}
+            const createdDiets = await Promise.all(uniqueDietNames.map(async (name) => {
+                return await Diets.create({ name });
+            }));
+
+            return createdDiets;
+        } else {
+            return dietsFromDb;
+        }
+    } catch (error) {
+        console.error('Error al obtener las dietas:', error.message);
+        throw new Error('Error al obtener las dietas');
+    }
+};
 
 module.exports = {
-    getDietController
+    getDiets
 };
